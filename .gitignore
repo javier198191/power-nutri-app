@@ -1,0 +1,13 @@
+# Dependencias
+node_modules/
+.next/
+dist/
+venv/
+__pycache__/
+
+# Variables de entorno 
+.env
+.env.local
+
+# Base de datos
+postgres_data/
