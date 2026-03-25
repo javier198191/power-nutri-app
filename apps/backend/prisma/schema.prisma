@@ -1,0 +1,229 @@
+
+generator client {
+  provider = "prisma-client-js"
+
+}
+
+
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+
+// ==========================================
+
+// 👤 DOMINIO CORE
+
+// ==========================================
+
+
+
+model Usuario {
+
+  id                        String                @id @default(uuid())
+
+  email                     String                @unique
+
+  passwordHash              String
+
+  pesoCorporalKg            Decimal               @db.Decimal(5, 2)
+
+  presupuestoSemanalCop     Int                   // Clave para optimizar la dieta en Python
+
+  estadoActivo              Boolean               @default(true)
+
+  fechaRegistro             DateTime              @default(now())
+
+  
+
+  mesociclos                Mesociclo[]
+
+  sesiones                  SesionEntrenamiento[]
+
+  planesNutricionales       PlanNutricional[]
+
+}
+
+
+
+// ==========================================
+
+// 🏋️‍♂️ DOMINIO POWERBUILDING
+
+// ==========================================
+
+
+
+model Mesociclo {
+
+  id             String                @id @default(uuid())
+
+  usuarioId      String
+
+  nombre         String                // Ej: "Bloque de Fuerza 1"
+
+  fechaInicio    DateTime
+
+  fechaFin       DateTime?
+
+  activo         Boolean               @default(true)
+
+  
+
+  usuario        Usuario               @relation(fields: [usuarioId], references: [id])
+
+  sesiones       SesionEntrenamiento[]
+
+}
+
+
+
+model SesionEntrenamiento {
+
+  id                String      @id @default(uuid())
+
+  usuarioId         String
+
+  mesocicloId       String?
+
+  fecha             DateTime    @default(now())
+
+  pesoCorporalDia   Decimal?    @db.Decimal(5, 2)
+
+  notas             String?
+
+  
+
+  usuario           Usuario     @relation(fields: [usuarioId], references: [id])
+
+  mesociclo         Mesociclo?  @relation(fields: [mesocicloId], references: [id])
+
+  series            Serie[]
+
+}
+
+
+
+model Ejercicio {
+
+  id              String   @id @default(uuid())
+
+  nombre          String   @unique // Ej: "Sentadilla", "Press Banca"
+
+  esBasico        Boolean  @default(false)
+
+  grupoMuscular   String
+
+  
+
+  series          Serie[]
+
+}
+
+
+
+model Serie {
+
+  id               String              @id @default(uuid())
+
+  sesionId         String
+
+  ejercicioId      String
+
+  pesoKg           Decimal             @db.Decimal(6, 2)
+
+  repeticiones     Int
+
+  rpe              Decimal?            @db.Decimal(3, 1) // Escala de esfuerzo
+
+  esRecordPersonal Boolean             @default(false)
+
+  
+
+  sesion           SesionEntrenamiento @relation(fields: [sesionId], references: [id])
+
+  ejercicio        Ejercicio           @relation(fields: [ejercicioId], references: [id])
+
+}
+
+
+
+// ==========================================
+
+// 🍳 DOMINIO NUTRICIÓN INTELIGENTE
+
+// ==========================================
+
+
+
+model Alimento {
+
+  id                  String          @id @default(uuid())
+
+  nombre              String          @unique // Ej: "Huevo entero", "Banano"
+
+  proteinaG           Decimal         @db.Decimal(5, 2)
+
+  carbohidratosG      Decimal         @db.Decimal(5, 2)
+
+  grasasG             Decimal         @db.Decimal(5, 2)
+
+  precioPromedioCop   Int             // Vital para cruzar con el presupuesto
+
+  unidadMedida        String          // Ej: "Unidad", "100g"
+
+  
+
+  planes              PlanAlimento[]
+
+}
+
+
+
+model PlanNutricional {
+
+  id                    String          @id @default(uuid())
+
+  usuarioId             String
+
+  fechaCreacion         DateTime        @default(now())
+
+  costoTotalEstimadoCop Int
+
+  totalCalorias         Decimal         @db.Decimal(6, 2)
+
+  
+
+  usuario               Usuario         @relation(fields: [usuarioId], references: [id])
+
+  alimentos             PlanAlimento[]
+
+}
+
+
+
+// Tabla Intermedia para la relación Muchos a Muchos
+
+model PlanAlimento {
+
+  planId      String
+
+  alimentoId  String
+
+  cantidad    Int     // Cuántas unidades o porciones de este alimento
+
+  
+
+  plan        PlanNutricional @relation(fields: [planId], references: [id])
+
+  alimento    Alimento        @relation(fields: [alimentoId], references: [id])
+
+
+
+  @@id([planId, alimentoId])
+
+}
+
