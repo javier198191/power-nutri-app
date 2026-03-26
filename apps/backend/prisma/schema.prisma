@@ -44,6 +44,7 @@ model Usuario {
   sesiones                  SesionEntrenamiento[]
 
   planesNutricionales       PlanNutricional[]
+  recordsPersonales         RecordPersonal[]
 
 }
 
@@ -120,6 +121,7 @@ model Ejercicio {
   
 
   series          Serie[]
+  recordsPersonales RecordPersonal[]
 
 }
 
@@ -139,7 +141,10 @@ model Serie {
 
   rpe              Decimal?            @db.Decimal(3, 1) // Escala de esfuerzo
 
+  rir              Int?                                  // Repeticiones en recámara
+
   esRecordPersonal Boolean             @default(false)
+
 
   
 
@@ -227,3 +232,15 @@ model PlanAlimento {
 
 }
 
+model RecordPersonal {
+  id               String    @id @default(uuid())
+  usuarioId        String
+  ejercicioId      String
+  pesoMaximo       Decimal   @db.Decimal(6, 2)
+  repeticiones     Int
+  e1RM             Decimal   @db.Decimal(6, 2)
+  fecha            DateTime  @default(now())
+
+  usuario          Usuario   @relation(fields: [usuarioId], references: [id])
+  ejercicio        Ejercicio @relation(fields: [ejercicioId], references: [id])
+}
