@@ -12,6 +12,13 @@ async function bootstrap() {
     transform: true 
   }));
 
+  // Habilitar CORS para el frontend en el puerto 3003
+  app.enableCors({
+    origin: ['http://localhost:3003'],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  });
+
   const port = 3002;
   await app.listen(port);
   console.log(`🚀 Application is running on: http://localhost:${port}`);

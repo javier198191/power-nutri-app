@@ -23,7 +23,7 @@
     "noFallthroughCasesInSwitch": false,
     "paths": {
       "prisma/config": ["./node_modules/prisma/build/public/config.d.ts"]
-    },
-    "exclude": ["node_modules", "test", "dist", "**/*spec.ts", "prisma.config.mts"]
-  }
+    }
+  },
+  "exclude": ["node_modules", "test", "dist", "**/*spec.ts", "prisma.config.mts"]
 }
