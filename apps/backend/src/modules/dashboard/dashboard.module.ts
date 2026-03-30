@@ -6,6 +6,8 @@ import { AuthModule } from '../auth/auth.module';
 import { PlanNutricionalModule } from '../plan-nutricional/plan-nutricional.module';
 import { EntrenamientoModule } from '../entrenamiento/entrenamiento.module';
 import { RecordsModule } from '../records/records.module';
+import { BiometriaModule } from '../biometria/biometria.module';
+
 
 @Module({
   imports: [
@@ -14,7 +16,9 @@ import { RecordsModule } from '../records/records.module';
     PlanNutricionalModule,
     EntrenamientoModule,
     RecordsModule,
+    BiometriaModule,
   ],
+
   controllers: [DashboardController],
   providers: [DashboardService],
 })

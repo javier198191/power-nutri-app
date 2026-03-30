@@ -1,29 +1,21 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsInt, IsNumber, IsString, MinLength, IsOptional, IsEnum, IsDateString } from 'class-validator';
+import { IsInt, IsNumber, IsOptional, IsEnum, IsDateString, Min, Max, IsString } from 'class-validator';
 import { NivelActividad, Objetivo } from '@prisma/client';
 
-export class RegisterDto {
-  @ApiProperty({ example: 'user@example.com' })
-  @IsEmail()
-  email!: string;
-
-  @ApiProperty({ example: 'password123', minLength: 8 })
-  @IsString()
-  @MinLength(8)
-  password!: string;
-
-  @ApiProperty({ example: 80 })
-  @IsNumber()
-  pesoCorporalKg!: number;
-
-  @ApiProperty({ example: 150000 })
-  @IsInt()
-  presupuestoSemanalCop!: number;
-
-  @ApiProperty({ example: 180, required: false })
+export class UpdateProfileDto {
+  @ApiProperty({ example: 180, required: false, minimum: 50, maximum: 250 })
   @IsOptional()
   @IsInt()
+  @Min(50)
+  @Max(250)
   alturaCm?: number;
+
+  @ApiProperty({ example: 80, required: false, minimum: 20, maximum: 300 })
+  @IsOptional()
+  @IsNumber()
+  @Min(20)
+  @Max(300)
+  pesoCorporalKg?: number;
 
   @ApiProperty({ example: '1995-06-15', required: false })
   @IsOptional()
@@ -45,3 +37,4 @@ export class RegisterDto {
   @IsEnum(Objetivo)
   objetivo?: Objetivo;
 }
+

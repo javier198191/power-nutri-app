@@ -1,10 +1,76 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreatePlanNutricionalDto } from './dto/create-plan-nutricional.dto';
+import { CreateNutricionLogDto } from './dto/create-log.dto';
+import { BiometriaService } from '../biometria/biometria.service';
 
 @Injectable()
 export class PlanNutricionalService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly biometriaService: BiometriaService,
+  ) {}
+
+
+  async createLog(userId: string, dto: CreateNutricionLogDto) {
+    const user = await this.prisma.usuario.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('Usuario no encontrado');
+
+    // Misión Crítica: Sprint Final - Lógica de Validación
+    const perfil = this.biometriaService.getPerfilNutricional(user);
+    let cumplioObjetivo = false;
+    let caloriasFaltantes = 0;
+    
+    if (perfil.calculoDisponible && 'caloriasObjetivo' in perfil) {
+      const objetivo = perfil.caloriasObjetivo as number;
+      cumplioObjetivo = dto.caloriasConsumidas <= objetivo;
+      caloriasFaltantes = Math.max(0, objetivo - dto.caloriasConsumidas);
+    }
+
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0); // Truncar a inicio de día UTC
+
+    const log = await (this.prisma as any).registroNutricion.upsert({
+      where: {
+
+        usuarioId_fecha: {
+          usuarioId: userId,
+          fecha: hoy
+        }
+      },
+      update: {
+        caloriasConsumidas: dto.caloriasConsumidas,
+        proteinaG: dto.proteinaG,
+        carbosG: dto.carbosG,
+        grasasG: dto.grasasG,
+        aguaLitros: dto.aguaLitros,
+        comentarios: dto.comentarios,
+        cumplioObjetivo
+      },
+      create: {
+        usuarioId: userId,
+        fecha: hoy,
+        planNutricionalId: dto.planNutricionalId,
+        caloriasConsumidas: dto.caloriasConsumidas,
+        proteinaG: dto.proteinaG,
+        carbosG: dto.carbosG,
+        grasasG: dto.grasasG,
+        aguaLitros: dto.aguaLitros || 0,
+        comentarios: dto.comentarios,
+        cumplioObjetivo
+      }
+    });
+
+    return {
+      log,
+      metaCalorias: perfil.caloriasObjetivo || null,
+      caloriasFaltantes,
+      diagnostico: caloriasFaltantes > 0 
+        ? `Te faltan ${caloriasFaltantes} calorías para tu meta.`
+        : `¡Meta calórica alcanzada o superada!`
+    };
+  }
+
 
   async create(userId: string, createPlanDto: CreatePlanNutricionalDto) {
     const user = await this.prisma.usuario.findUnique({

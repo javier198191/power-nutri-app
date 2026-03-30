@@ -31,6 +31,16 @@ model Usuario {
 
   pesoCorporalKg            Decimal               @db.Decimal(5, 2)
 
+  alturaCm                  Int?
+
+  fechaNacimiento           DateTime?
+
+  sexo                      String?               // "H" o "M" o "HOMBRE"/"MUJER"
+
+  nivelActividad            NivelActividad?       @default(SEDENTARIO)
+
+  objetivo                  Objetivo?             @default(MANTENER)
+
   presupuestoSemanalCop     Int                   // Clave para optimizar la dieta en Python
 
   estadoActivo              Boolean               @default(true)
@@ -45,8 +55,25 @@ model Usuario {
 
   planesNutricionales       PlanNutricional[]
   recordsPersonales         RecordPersonal[]
-
+  registrosNutricion        RegistroNutricion[]
+  progresosFisicos          ProgresoFisico[]
 }
+
+
+enum NivelActividad {
+  SEDENTARIO
+  LIGERO
+  MODERADO
+  INTENSO
+  ATLETA
+}
+
+enum Objetivo {
+  PERDER_GRASA
+  MANTENER
+  GANAR_MUSCULO
+}
+
 
 
 
@@ -203,9 +230,8 @@ model PlanNutricional {
   
 
   usuario               Usuario         @relation(fields: [usuarioId], references: [id])
-
   alimentos             PlanAlimento[]
-
+  registrosNutricion    RegistroNutricion[]
 }
 
 
@@ -244,3 +270,34 @@ model RecordPersonal {
   usuario          Usuario   @relation(fields: [usuarioId], references: [id])
   ejercicio        Ejercicio @relation(fields: [ejercicioId], references: [id])
 }
+
+model RegistroNutricion {
+  id                 String          @id @default(uuid())
+  usuarioId          String
+  planNutricionalId  String?
+  fecha              DateTime        @default(now()) @db.Date
+  caloriasConsumidas Decimal         @db.Decimal(6, 2)
+  proteinaG          Decimal         @db.Decimal(5, 2)
+  carbosG            Decimal         @db.Decimal(5, 2)
+  grasasG            Decimal         @db.Decimal(5, 2)
+  aguaLitros         Decimal         @default(0) @db.Decimal(4, 2)
+  comentarios        String?
+  cumplioObjetivo    Boolean         @default(false)
+
+  usuario            Usuario         @relation(fields: [usuarioId], references: [id])
+  planNutricional    PlanNutricional? @relation(fields: [planNutricionalId], references: [id])
+
+  @@unique([usuarioId, fecha])
+}
+
+model ProgresoFisico {
+  id             String   @id @default(uuid())
+  usuarioId      String
+  fecha          DateTime @default(now()) @db.Date
+  pesoCorporalKg Decimal? @db.Decimal(5, 2)
+  urlFoto        String?
+  notas          String?
+
+  usuario        Usuario  @relation(fields: [usuarioId], references: [id])
+}
+

@@ -11,6 +11,7 @@ import { EntrenamientoModule } from './modules/entrenamiento/entrenamiento.modul
 import { RecordsModule } from './modules/records/records.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { ProgresoModule } from './modules/progreso/progreso.module';
 
 @Module({
   imports: [
@@ -26,7 +27,9 @@ import { PrismaModule } from './prisma/prisma.module';
     RecordsModule,
     DashboardModule,
     PrismaModule,
+    ProgresoModule,
   ],
+
   controllers: [AppController],
   providers: [AppService],
 })
